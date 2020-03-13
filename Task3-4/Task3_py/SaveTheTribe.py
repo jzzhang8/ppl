@@ -1,4 +1,6 @@
-# /∗
+# -*- coding: utf-8 -*
+
+# ∗
 # ∗ CSCI3180 Principles of Programming Languages 
 # ∗
 # ∗ --- Declaration --- 
@@ -14,7 +16,7 @@
 # ∗ Name : ZHANG Jingze
 # ∗ Student ID : 1155107857
 # ∗ Email Addr : jzzhang8@cse.cuhk.edu.hk 
-# ∗/
+# ∗
 
 
 from Map import Map
