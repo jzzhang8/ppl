@@ -1,0 +1,369 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. TA-RANKING. 
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT OPTIONAL INS-FILE ASSIGN TO 'instructors.txt'
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS INS-FILE-STATUS.
+           SELECT OPTIONAL CAND-FILE ASSIGN TO 'candidates.txt'
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS CAND-FILE-STATUS.
+           SELECT OUT-FILE ASSIGN TO 'output.txt'
+               ORGANIZATION IS BINARY SEQUENTIAL.
+       DATA DIVISION.
+           FILE SECTION.
+           FD INS-FILE.
+           01 INSTRUCTOR.
+               03 INS-COURSE-ID PIC X(5).
+               03 REQ-SKILLS PIC X(15) OCCURS 3 TIMES.
+               03 OPT-SKILLS PIC X(15) OCCURS 5 TIMES.
+           FD CAND-FILE.
+           01 CANDIDATE.
+               03 TA-ID PIC X(11).
+               03 TA-SKILLS PIC X(15) OCCURS 8 TIMES.
+               03 COURSE-PREFER PIC X(5) OCCURS 3 TIMES.
+           FD OUT-FILE.
+           01 OUT-LINE.
+               03 OUT-COURSE-ID PIC X(5).
+               03 OUT-ID1 PIC X(11).
+               03 OUT-ID2 PIC X(11).
+               03 OUT-ID3 PIC X(11).
+               03 EOL PIC X.
+           WORKING-STORAGE SECTION.
+           01 INS-FILE-STATUS PIC X(2).
+           01 CAND-FILE-STATUS PIC X(2).
+           01 WS-EOF PIC A(1).
+           01 CURRENT-SCORE PIC 9V9.
+           01 SCORE1 PIC 9V9.
+           01 SCORE2 PIC 9V9.
+           01 SCORE3 PIC 9V9.
+           01 REQ-NUM PIC 9.
+       PROCEDURE DIVISION.
+       MAIN.
+           DISPLAY "Program start.".
+           MOVE x'0a' TO EOL.
+           OPEN INPUT INS-FILE.
+           OPEN OUTPUT OUT-FILE.
+        *>    SET UP THE OPEN FILES HERE, WE DO NOT 
+        *>    OPEN THE CANDIDATE FILE HERE
+        *>    DISPLAY "INS-STATUS: ", INS-FILE-STATUS.
+           IF NOT INS-FILE-STATUS = 00 THEN
+               DISPLAY "non-existing file!"
+               GO TO END-OF-PROG
+           END-IF.
+
+        *>    CHECK CAND FILE EXISTS
+           OPEN INPUT CAND-FILE.
+           IF NOT CAND-FILE-STATUS = 00 THEN
+               DISPLAY "non-existing file!"
+               GO TO END-OF-PROG
+           END-IF.
+        *>    CHECK INPUT FILES EMPTY
+           READ INS-FILE
+               AT END 
+                   DISPLAY 'ERROR: instructors.txt EMPTY'
+                   GO TO END-OF-PROG
+           END-READ.
+           CLOSE INS-FILE.
+           OPEN INPUT INS-FILE.
+           READ CAND-FILE
+               AT END
+                   DISPLAY 'ERROR: candidates.txt EMPTY'
+                   GO TO END-OF-PROG
+           END-READ.
+           CLOSE CAND-FILE.
+           OPEN INPUT CAND-FILE.
+
+        INS-READ-ONE.
+           READ INS-FILE INTO INSTRUCTOR
+               AT END 
+                   DISPLAY "END OF INS FILE."
+                   GO TO END-OF-PROG
+               NOT AT END 
+                   DISPLAY "NOT END YET"
+                   GO TO CAND-BODY-PRE
+           END-READ.
+       
+       
+       CAND-BODY-PRE.
+        *>    INITIALIZE THE TOP 3 TA-IDS AND SCORES
+           MOVE 0 TO SCORE1.
+           MOVE 0 TO SCORE2.
+           MOVE 0 TO SCORE3.
+           MOVE INS-COURSE-ID TO OUT-COURSE-ID.
+           MOVE "0000000000 " TO OUT-ID1.
+           MOVE "0000000000 " TO OUT-ID2.
+           MOVE "0000000000 " TO OUT-ID3.
+           CLOSE CAND-FILE.
+           OPEN INPUT CAND-FILE.
+           DISPLAY INS-COURSE-ID.
+           GO TO CAND-LOOP.
+           
+       CAND-LOOP.
+           MOVE 0 TO REQ-NUM.
+           MOVE 0 TO CURRENT-SCORE.
+           READ CAND-FILE INTO CANDIDATE
+               AT END
+            *>    WRITE THE LINE TO THE OUTPUT FILE AT THE END 
+            *>     OF THE CANDIDATE FILE 
+                   WRITE OUT-LINE
+                   DISPLAY "CAND AT END"
+                   GO TO INS-READ-ONE
+               NOT AT END
+               *>    REQ-SKILL 1, TA-SKILLS 1-8
+                   IF REQ-SKILLS(1) = TA-SKILLS(1) THEN
+                       ADD 1 TO REQ-NUM
+                   END-IF
+                   IF REQ-SKILLS(1) = TA-SKILLS(2) THEN
+                       ADD 1 TO REQ-NUM
+                   END-IF
+                   IF REQ-SKILLS(1) = TA-SKILLS(3) THEN
+                       ADD 1 TO REQ-NUM
+                   END-IF
+                   IF REQ-SKILLS(1) = TA-SKILLS(4) THEN
+                       ADD 1 TO REQ-NUM
+                   END-IF
+                   IF REQ-SKILLS(1) = TA-SKILLS(5) THEN
+                       ADD 1 TO REQ-NUM
+                   END-IF
+                   IF REQ-SKILLS(1) = TA-SKILLS(6) THEN
+                       ADD 1 TO REQ-NUM
+                   END-IF
+                   IF REQ-SKILLS(1) = TA-SKILLS(7) THEN
+                       ADD 1 TO REQ-NUM
+                   END-IF
+                   IF REQ-SKILLS(1) = TA-SKILLS(8) THEN
+                       ADD 1 TO REQ-NUM
+                   END-IF
+        *>       EQ-SKILL 3, TA-SKILLS 1-8
+                   IF REQ-SKILLS(2) = TA-SKILLS(1) THEN
+                       ADD 1 TO REQ-NUM
+                   END-IF
+                   IF REQ-SKILLS(2) = TA-SKILLS(2) THEN
+                       ADD 1 TO REQ-NUM
+                   END-IF
+                   IF REQ-SKILLS(2) = TA-SKILLS(3) THEN
+                       ADD 1 TO REQ-NUM
+                   END-IF
+                   IF REQ-SKILLS(2) = TA-SKILLS(4) THEN
+                       ADD 1 TO REQ-NUM
+                   END-IF
+                   IF REQ-SKILLS(2) = TA-SKILLS(5) THEN
+                       ADD 1 TO REQ-NUM
+                   END-IF
+                   IF REQ-SKILLS(2) = TA-SKILLS(6) THEN
+                       ADD 1 TO REQ-NUM
+                   END-IF
+                   IF REQ-SKILLS(2) = TA-SKILLS(7) THEN
+                       ADD 1 TO REQ-NUM
+                   END-IF
+                   IF REQ-SKILLS(2) = TA-SKILLS(8) THEN
+                       ADD 1 TO REQ-NUM
+                   END-IF
+                   *>        REQ-SKILL 3, TA-SKILLS 1-8
+                   IF REQ-SKILLS(3) = TA-SKILLS(1) THEN
+                       ADD 1 TO REQ-NUM
+                   END-IF
+                   IF REQ-SKILLS(3) = TA-SKILLS(2) THEN
+                       ADD 1 TO REQ-NUM
+                   END-IF
+                   IF REQ-SKILLS(3) = TA-SKILLS(3) THEN
+                       ADD 1 TO REQ-NUM
+                   END-IF
+                   IF REQ-SKILLS(3) = TA-SKILLS(4) THEN
+                       ADD 1 TO REQ-NUM
+                   END-IF
+                   IF REQ-SKILLS(3) = TA-SKILLS(5) THEN
+                       ADD 1 TO REQ-NUM
+                   END-IF
+                   IF REQ-SKILLS(3) = TA-SKILLS(6) THEN
+                       ADD 1 TO REQ-NUM
+                   END-IF
+                   IF REQ-SKILLS(3) = TA-SKILLS(7) THEN
+                       ADD 1 TO REQ-NUM
+                   END-IF
+                   IF REQ-SKILLS(3) = TA-SKILLS(8) THEN
+                       ADD 1 TO REQ-NUM
+                   END-IF
+                *>    -----------OPT SKILL BELOW----------------
+                *>    CALCULATE THE SKILL SCORE
+                *>     OPT 1, TA-SKILL 1-8
+                   IF OPT-SKILLS(1) = TA-SKILLS(1) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(1) = TA-SKILLS(2) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(1) = TA-SKILLS(3) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(1) = TA-SKILLS(4) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(1) = TA-SKILLS(5) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(1) = TA-SKILLS(6) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(1) = TA-SKILLS(7) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(1) = TA-SKILLS(8) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                *>     OPT 2, TA-SKILL 1-8
+                   IF OPT-SKILLS(2) = TA-SKILLS(1) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(2) = TA-SKILLS(2) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(2) = TA-SKILLS(3) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(2) = TA-SKILLS(4) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(2) = TA-SKILLS(5) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(2) = TA-SKILLS(6) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(2) = TA-SKILLS(7) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(2) = TA-SKILLS(8) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+            *>         OPT 3, TA-SKILL 1-8
+                   IF OPT-SKILLS(3) = TA-SKILLS(1) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(3) = TA-SKILLS(2) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(3) = TA-SKILLS(3) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(3) = TA-SKILLS(4) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(3) = TA-SKILLS(5) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(3) = TA-SKILLS(6) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(3) = TA-SKILLS(7) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(3) = TA-SKILLS(8) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+            *>         OPT 4, TA-SKILL 1-8
+                   IF OPT-SKILLS(4) = TA-SKILLS(1) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(4) = TA-SKILLS(2) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(4) = TA-SKILLS(3) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(4) = TA-SKILLS(4) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(4) = TA-SKILLS(5) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(4) = TA-SKILLS(6) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(4) = TA-SKILLS(7) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(4) = TA-SKILLS(8) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+            *>         OPT 5, TA-SKILL 1-8
+                   IF OPT-SKILLS(5) = TA-SKILLS(1) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(5) = TA-SKILLS(2) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(5) = TA-SKILLS(3) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(5) = TA-SKILLS(4) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(5) = TA-SKILLS(5) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(5) = TA-SKILLS(6) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(5) = TA-SKILLS(7) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF OPT-SKILLS(5) = TA-SKILLS(8) THEN
+                      ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   
+            *>        ADD THE PREFERENCE SCORE
+                   IF INS-COURSE-ID = COURSE-PREFER(1) THEN
+                       ADD 1.5 TO CURRENT-SCORE
+                   END-IF
+                   IF INS-COURSE-ID = COURSE-PREFER(2) THEN
+                       ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   IF INS-COURSE-ID = COURSE-PREFER(3) THEN
+                       ADD 0.5 TO CURRENT-SCORE
+                   END-IF
+                *>    REQUIRED SKILLS NOT GOT
+                   IF REQ-NUM < 3 THEN
+                       MOVE 0 TO CURRENT-SCORE
+                   END-IF
+                *>    REQUIRED SKILLS GOT
+                   IF REQ-NUM = 3 THEN 
+                       ADD 1 TO CURRENT-SCORE
+                   END-IF
+                   
+                   IF CURRENT-SCORE > SCORE1 THEN
+                       MOVE SCORE2 TO SCORE3
+                       MOVE SCORE1 TO SCORE2
+                       MOVE CURRENT-SCORE TO SCORE1
+                       MOVE OUT-ID2 TO OUT-ID3
+                       MOVE OUT-ID1 TO OUT-ID2
+                       MOVE TA-ID TO OUT-ID1
+                       GO TO OUT-BLOCK
+                   END-IF
+                   IF CURRENT-SCORE > SCORE2 THEN
+                       MOVE SCORE2 TO SCORE3
+                       MOVE CURRENT-SCORE TO SCORE2
+                       MOVE OUT-ID2 TO OUT-ID3
+                       MOVE TA-ID TO OUT-ID2
+                       GO TO OUT-BLOCK
+                   END-IF
+                   IF CURRENT-SCORE > SCORE3 THEN
+                       MOVE CURRENT-SCORE TO SCORE3
+                       MOVE TA-ID TO OUT-ID3
+                   END-IF
+
+           END-READ.
+
+       OUT-BLOCK.                   
+            DISPLAY "  ",TA-ID,":",CURRENT-SCORE.
+            DISPLAY OUT-LINE.
+            GO TO CAND-LOOP.
+
+
+       END-OF-PROG.
+           CLOSE CAND-FILE
+           CLOSE INS-FILE.
+           CLOSE OUT-FILE.
+       STOP RUN.
